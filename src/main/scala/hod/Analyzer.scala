@@ -19,8 +19,10 @@ import org.json4s.jackson.JsonMethods
 import org.json4s.{DefaultFormats, JObject, JsonAST}
 
 object Analyzer extends spells.Spells {
+
   implicit class StringOps(val str: String) extends AnyVal {
     def shiftRight(i: Int) = str.reverse.padTo(i, ' ').reverse
+
     def niceNumber = {
       Try {
         val value = str.toDouble
@@ -33,22 +35,29 @@ object Analyzer extends spells.Spells {
   }
 
   private val dateTimePatternFileName = "dd_MM_yyyy_HH_mm_ss"
-  private val dateTimePatternCSV      = "dd.MM.yyyy HH:mm:ss"
-  private val timeLimitInMinutes      = 5
+  private val dateTimePatternCSV = "dd.MM.yyyy HH:mm:ss"
+  private val timeLimitInMinutes = 15
 
-  private val authLocation = new File("/media/sf_vmsharedsync/auth")
-  private val props        = {
+  private val rootOfFiles = {
+    List("/media/sf_vmsharedsync", "C:/Users/Test/Resilio Sync//vmsharedsync")
+      .map(new File(_))
+      .find(_.exists)
+      .get
+      .getAbsolutePath
+  }
+  private val authLocation = new File(s"$rootOfFiles/auth")
+  private val props = {
     val prop = new Properties
     val stream = new FileInputStream(new File(s"$authLocation/key.txt"))
     prop.load(stream)
     prop
   }
-  private val matrixStore  = new File("/media/sf_vmsharedsync/matrix")
-  private val df           = new DecimalFormat("#0.00")
-  private val dfPrecise    = new DecimalFormat("#0.000")
-  private val dfSigned     = new DecimalFormat("+#00.00;-#")
-  private val key          = props.getProperty("key")
-  private val secret       = props.getProperty("secret")
+  private val matrixStore = new File(s"$rootOfFiles/matrix")
+  private val df = new DecimalFormat("#0.00")
+  private val dfPrecise = new DecimalFormat("#0.000")
+  private val dfSigned = new DecimalFormat("+#00.00;-#")
+  private val key = props.getProperty("key")
+  private val secret = props.getProperty("secret")
 
   private val host = "https://api.changelly.com"
 
@@ -58,7 +67,7 @@ object Analyzer extends spells.Spells {
       "dcr", "nlg", "nav",
       "ltc", "doge", "pivx",
       "rads", "strat", "waves")
-    .map(Currency)
+      .map(Currency)
   }
 
   def estimationFactor(currency: Currency) = {
@@ -70,6 +79,7 @@ object Analyzer extends spells.Spells {
   }
 
   case class Currency(code: String)
+
   case class Income(amount: Amount, when: DateTime)
 
   case class ExchangedAmount(original: Amount, switched: Amount, rate: Rate,
@@ -82,8 +92,10 @@ object Analyzer extends spells.Spells {
     }
 
   }
+
   case class Amount(value: Double, currency: Currency) {
     def format = s"${dfPrecise.format(value)} ${currency.code}"
+
     def formatSpacey = s"${dfPrecise.format(value)} ${currency.code.shiftRight(5)}"
   }
 
@@ -92,7 +104,7 @@ object Analyzer extends spells.Spells {
       List(from.code, to.code,
         factor,
         recordedAt.toString("dd.MM.yyy HH:mm:ss"))
-      .mkString("\"", "\";\"", "\"")
+        .mkString("\"", "\";\"", "\"")
     }
   }
 
@@ -143,14 +155,17 @@ object Analyzer extends spells.Spells {
     def bestOption = options.maxBy(_.sortBy)
 
   }
+
   case class ExchangeGuesstimation(ifExchangeIsDoneNow: Amount,
                                    explainAlt1: List[ExchangedAmount],
                                    explainAlt2: List[ExchangedAmount],
                                    ifHadNotDoneTheExchange: List[ExchangedAmount]) {
 
     private def amountExchangedIfHadKept = ifHadNotDoneTheExchange.map(_.switched).map(_.value).sum
+
     private def amountExchangedAlt1 = Amount(explainAlt1.map(_.switched).map(_.value).sum,
       explainAlt1.head.switched.currency)
+
     private def amountExchangedAlt2 = Amount(explainAlt2.map(_.switched).map(_.value).sum,
       explainAlt2.head.switched.currency)
 
@@ -166,33 +181,33 @@ object Analyzer extends spells.Spells {
         s"$sum ($elements)"
       }
       val percentToAlternativeSwitch = dfSigned.format((improvementRatioToSwitch - 1) * 100)
-                                       .niceNumber
+        .niceNumber
       val percentToAlternativeSwitch2 = dfSigned.format((improvementRatioToSwitch2 - 1) * 100)
-                                        .niceNumber
+        .niceNumber
       val percentToNonAction = dfSigned.format((improvementRatioToNonAction - 1) * 100).niceNumber
       val currency = ifExchangeIsDoneNow.currency.code.shiftRight(5)
       val details1 = amountExchangedAlt1.formatSpacey.shiftRight(17) + " = " +
-                     explainAlt1.map(_.format).mkString(" + ")
+        explainAlt1.map(_.format).mkString(" + ")
       val details2 = amountExchangedAlt2.formatSpacey.shiftRight(17) + " = " +
-                     explainAlt2.map(_.format).mkString(" + ")
-      val details = s"$percentToAlternativeSwitch% $details1 || [alt exchange earlier] " +
-                    s"$percentToAlternativeSwitch2% $details2"
+        explainAlt2.map(_.format).mkString(" + ")
+      val altExchangeEarlier = s"$percentToAlternativeSwitch2% $details2"
+      val details = s"$percentToAlternativeSwitch% $details1 || [alt exchange earlier] " + altExchangeEarlier
       val sharedDetails = details
       val altResult = amountExchangedAlt1.formatSpacey.shiftRight(17)
       val describeCompareToAction = s"$currency $now would be $sharedDetails"
       val describeCompareToNonAction = s"$currency $now would be [to unchanged] " +
-                                       s"$percentToNonAction% -> $describeNonAction"
+        s"$percentToNonAction% -> $describeNonAction"
       if (improvementRatioToNonAction.isInfinity) {
-        describeCompareToAction
+        s"$currency $now compared to $altExchangeEarlier"
       } else {
         s"$describeCompareToNonAction || [if done earlier] $sharedDetails"
       }
     }
 
-    val improvementRatioToSwitch    = {
+    val improvementRatioToSwitch = {
       ifExchangeIsDoneNow.value / amountExchangedAlt1.value
     }
-    val improvementRatioToSwitch2   = {
+    val improvementRatioToSwitch2 = {
       ifExchangeIsDoneNow.value / amountExchangedAlt2.value
     }
     val improvementRatioToNonAction = {
@@ -200,11 +215,8 @@ object Analyzer extends spells.Spells {
     }
 
     val sortBy = {
-      if (improvementRatioToNonAction.isInfinite) improvementRatioToSwitch +
-                                                  improvementRatioToSwitch2
-      else improvementRatioToNonAction + improvementRatioToSwitch + improvementRatioToSwitch2
+      List(improvementRatioToNonAction, improvementRatioToSwitch, improvementRatioToSwitch2).filterNot(_.isInfinity).sum
     }
-
   }
 
   case class RateMatrix(lastDate: DateTime, rates: List[Rate]) {
@@ -265,9 +277,9 @@ object Analyzer extends spells.Spells {
     def consumeStream(in: InputStream) = {
       val bytes = {
         Iterator.continually(in.read())
-        .takeWhile(_ != -1)
-        .map(_.toByte)
-        .toArray
+          .takeWhile(_ != -1)
+          .map(_.toByte)
+          .toArray
       }
       in.close()
       bytes
@@ -284,8 +296,8 @@ object Analyzer extends spells.Spells {
         case (jKey, jValue) =>
           val jsonValue = {
             Try(jValue.toInt)
-            .orElse(Try(jValue.toDouble))
-            .orElse(Try(jValue)) match {
+              .orElse(Try(jValue.toDouble))
+              .orElse(Try(jValue)) match {
               case Success(i: Int) => JsonAST.JInt(i)
               case Success(d: Double) => JsonAST.JDouble(d)
               case Success(s: String) => JsonAST.JString(s)
@@ -380,7 +392,7 @@ object Analyzer extends spells.Spells {
     }.map { focusOnCurrency =>
       val currentBalance = {
         balance.find(_.currency == focusOnCurrency)
-        .getOrElse(Amount(0, focusOnCurrency))
+          .getOrElse(Amount(0, focusOnCurrency))
       }
 
       def calcIncoming(cutOff: Boolean) = {
@@ -405,7 +417,7 @@ object Analyzer extends spells.Spells {
           if (nextTransaction.isEmpty) {
             throw new IllegalStateException(
               s"could not find enough transactions to reach balance of $currentBalance using " +
-              s"$relevantTransactionsReversed")
+                s"$relevantTransactionsReversed")
           }
           nextTransaction.foreach { add =>
             if (cutOff && remainingBalanceToReach < add.gotten.value) {
@@ -425,10 +437,12 @@ object Analyzer extends spells.Spells {
       }
 
       val cost = {
-        var targetAmount = currentBalance.value
+        val targetAmount = currentBalance.value
         val pool = mutable.ArrayBuffer.empty ++= calcIncoming(false)
         val collected = mutable.ArrayBuffer.empty[Transaction]
+
         def collectedSum = collected.map(_.gotten.value).sum
+
         while (collectedSum < targetAmount) {
           if (pool.isEmpty) {
             throw new IllegalStateException("could not reconstruct payment")
@@ -479,7 +493,7 @@ object Analyzer extends spells.Spells {
             val day = 1000 * 60 * 60 * 24
             val beSuspicious = (closestMatch.lastDate.getMillis - income.when.getMillis).abs > day
             closestMatch.estimateExchangeResult(getAmount(income), targetCurrency)
-            .copy(unprecise = beSuspicious)
+              .copy(unprecise = beSuspicious)
           }
         }
       }
@@ -537,7 +551,7 @@ object Analyzer extends spells.Spells {
       val matrixHistory = loadData
       val dataIsOld = {
         matrixHistory.isEmpty ||
-        matrixHistory.map(_.lastDate).maxBy(_.getMillis).plusMinutes(timeLimitInMinutes).isBeforeNow
+          matrixHistory.map(_.lastDate).maxBy(_.getMillis).plusMinutes(timeLimitInMinutes).isBeforeNow
       }
       val all = {
         if (dataIsOld) {
@@ -562,25 +576,35 @@ object Analyzer extends spells.Spells {
   def main(args: Array[String]): Unit = {
     val transactions = getTransactions
     val history = getHistory
-    val start = buildBalance(
-      0.07 -> "dash"
+    val mined = buildBalance(
+      0.44 -> "eth",
+      0.14 -> "dash",
+      0.33 -> "etc",
     )
 
-    val current = start ++ buildBalance(
-      23.0 -> "rads",
-      17.765 -> "ltc",
-      (3.825) -> "eth"
-    )
+    val gottenViaTransactions = {
+      buildBalance(
+        23.0 -> "rads",
+        17.765 -> "ltc",
+        3.825 -> "eth"
+      ).groupBy(_.currency)
+        .map { case (currency, amounts) =>
+          Amount(amounts.map(_.value).sum, currency)
+        }.toList
+    }
 
-    val allOptions = determinePossibleExchanges(start, current, transactions, history)
+    val allOptions = {
+      determinePossibleExchanges(mined, mined, transactions, history) ++
+        determinePossibleExchanges(Nil, gottenViaTransactions, transactions, history)
+    }
     allOptions.foreach { e =>
       val msg = e.format
       println(msg)
     }
 
     history.last.currencies.foreach { c =>
-      val total = current.map { e => history.last.estimateExchangeResult(e, c) }
-                  .map(_.switched.value).sum
+      val total = (gottenViaTransactions++mined).map { e => history.last.estimateExchangeResult(e, c) }
+        .map(_.switched.value).sum
       println(
         s"Total balance in ${c.code.shiftRight(5)} = ${dfPrecise.format(total).shiftRight(12)}")
     }
