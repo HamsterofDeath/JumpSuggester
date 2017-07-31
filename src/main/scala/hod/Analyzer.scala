@@ -36,7 +36,7 @@ object Analyzer extends spells.Spells {
 
   private val dateTimePatternFileName = "dd_MM_yyyy_HH_mm_ss"
   private val dateTimePatternCSV = "dd.MM.yyyy HH:mm:ss"
-  private val timeLimitInMinutes = 15
+  private val timeLimitInMinutes = 1
 
   private val rootOfFiles = {
     List("/media/sf_vmsharedsync", "C:/Users/Test/Resilio Sync//vmsharedsync")
@@ -220,6 +220,10 @@ object Analyzer extends spells.Spells {
   }
 
   case class RateMatrix(lastDate: DateTime, rates: List[Rate]) {
+    def hasRatesFor(from: Currency, to: Currency): Boolean = {
+      from == to || rates.exists(e => e.from == from && e.to == to)
+    }
+
     def isValid = rates.forall(_.factor != 0.00)
 
     lazy val currencies = (rates.map(_.to) ++ rates.map(_.from)).distinct
@@ -376,14 +380,14 @@ object Analyzer extends spells.Spells {
     Iterator.continually(tryGet).find(_.isValid).head
   }
 
-  def determinePossibleExchanges(start: List[Amount],
-                                 balance: List[Amount],
+  def determinePossibleExchanges(balance: List[Amount],
                                  transactionHistory: List[Transaction],
-                                 checkAgainst: List[RateMatrix]):
+                                 checkAgainst: List[RateMatrix],
+                                 isMined:Boolean):
   Seq[Analyzer.ExchangeGuesstimationForWallet] = {
     val earliest = checkAgainst.map(_.lastDate).minBy(_.getMillis)
     val currencies = {
-      val relevant = start.map(_.currency) ++ transactionHistory.map(_.gotten.currency)
+      val relevant = balance.map(_.currency) ++ transactionHistory.map(_.gotten.currency)
       relevant.distinct.sortBy(_.code)
     }
 
@@ -396,16 +400,26 @@ object Analyzer extends spells.Spells {
       }
 
       def calcIncoming(cutOff: Boolean) = {
-        val initialTransaction = start.filter(_.currency == focusOnCurrency).map { e =>
-          val fake = Amount(0, Currency("magic"))
-          Transaction(fake, e, earliest)
+        val initialTransaction = {
+          if (isMined) {
+            balance.filter(_.currency == focusOnCurrency).map { e =>
+              val fake = Amount(0, Currency("magic"))
+              Transaction(fake, e, earliest)
+            }
+          } else {
+            Nil
+          }
         }
 
         val relevantTransactionsReversed = {
-          val withFake = initialTransaction ++ transactionHistory
-          withFake.filter { e =>
-            e.gotten.currency == focusOnCurrency
-          }.sortBy(_.when.getMillis).reverse
+          if (isMined) {
+            initialTransaction
+          } else {
+            val withFake = initialTransaction ++ transactionHistory
+            withFake.filter { e =>
+              e.gotten.currency == focusOnCurrency
+            }.sortBy(_.when.getMillis).reverse
+          }
         }
 
         var remainingBalanceToReach = currentBalance.value
@@ -487,7 +501,10 @@ object Analyzer extends spells.Spells {
           if (income.gotten.currency == targetCurrency) {
             ExchangedAmount(income.given, income.gotten, income.toRate)
           } else {
-            val closestMatch = against.minBy { e =>
+            val withRates = against.filter(_.hasRatesFor(getAmount(income).currency, targetCurrency) ||
+              getAmount(income).currency.code == "magic")
+            if (withRates.isEmpty) throw new RuntimeException(s"Could not find matrix which has data from ${getAmount(income).currency} to $targetCurrency")
+            val closestMatch = withRates.minBy { e =>
               (e.lastDate.getMillis - income.when.getMillis).abs
             }
             val day = 1000 * 60 * 60 * 24
@@ -543,7 +560,7 @@ object Analyzer extends spells.Spells {
   def getHistory = {
     val currencies = getCurrencies
     val relevant = currencies.intersect(interestedIn)
-    if (relevant != interestedIn) {
+    if (false && relevant != interestedIn) {
       throw new IllegalArgumentException {
         s"Missing: ${interestedIn.filterNot(currencies)}"
       }
@@ -577,16 +594,17 @@ object Analyzer extends spells.Spells {
     val transactions = getTransactions
     val history = getHistory
     val mined = buildBalance(
-      0.44 -> "eth",
-      0.14 -> "dash",
-      0.33 -> "etc",
+     // 0.48 -> "eth",
+      (0.12+0.2) -> "dash",
+    //  8.07 -> "etc",
     )
 
     val gottenViaTransactions = {
       buildBalance(
-        23.0 -> "rads",
+        113.0 -> "rads",
         17.765 -> "ltc",
-        3.825 -> "eth"
+        //6.61 -> "etc",
+        3.83 -> "eth"
       ).groupBy(_.currency)
         .map { case (currency, amounts) =>
           Amount(amounts.map(_.value).sum, currency)
@@ -594,8 +612,8 @@ object Analyzer extends spells.Spells {
     }
 
     val allOptions = {
-      determinePossibleExchanges(mined, mined, transactions, history) ++
-        determinePossibleExchanges(Nil, gottenViaTransactions, transactions, history)
+      determinePossibleExchanges(mined, transactions, history, isMined = true) ++
+        determinePossibleExchanges(gottenViaTransactions, transactions, history, isMined = false)
     }
     allOptions.foreach { e =>
       val msg = e.format
