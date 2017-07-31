@@ -35,8 +35,8 @@ object Analyzer extends spells.Spells {
   }
 
   private val dateTimePatternFileName = "dd_MM_yyyy_HH_mm_ss"
-  private val dateTimePatternCSV = "dd.MM.yyyy HH:mm:ss"
-  private val timeLimitInMinutes = 1
+  private val dateTimePatternCSV      = "dd.MM.yyyy HH:mm:ss"
+  private val timeLimitInMinutes      = 10
 
   private val rootOfFiles = {
     List("/media/sf_vmsharedsync", "C:/Users/Test/Resilio Sync//vmsharedsync")
@@ -100,6 +100,8 @@ object Analyzer extends spells.Spells {
   }
 
   case class Rate(from: Currency, to: Currency, factor: Double, recordedAt: DateTime) {
+    def fromTo = (from, to)
+
     def asCsvRow = {
       List(from.code, to.code,
         factor,
@@ -491,7 +493,16 @@ object Analyzer extends spells.Spells {
     val walletCurrency = incomes.head.gotten.currency
 
     val targetCurrencies = against.head.currencies.filter(_ != walletCurrency)
-    val mostRecent = against.maxBy(_.lastDate.getMillis)
+    val mostRecent = {
+      val allRatesNewestFirst = against.flatMap(_.rates).sortBy(_.recordedAt.getMillis).reverse
+      val newestWithFallback = {
+        allRatesNewestFirst.groupBy(_.fromTo)
+        .mapValues(_.maxBy(_.recordedAt.getMillis))
+        .values
+        .toList
+      }
+      RateMatrix(newestWithFallback.map(_.recordedAt).maxBy(_.getMillis), newestWithFallback)
+    }
     val totalBalance = {
       Amount(incomes.map(_.gotten.value).sum, incomes.head.gotten.currency)
     }
@@ -595,16 +606,16 @@ object Analyzer extends spells.Spells {
     val history = getHistory
     val mined = buildBalance(
      // 0.48 -> "eth",
-      (0.12+0.2) -> "dash",
+      (0.32) -> "dash",
     //  8.07 -> "etc",
     )
 
     val gottenViaTransactions = {
       buildBalance(
         113.0 -> "rads",
-        17.765 -> "ltc",
-        //6.61 -> "etc",
-        3.83 -> "eth"
+        //17.765 -> "ltc",
+        3.82 -> "eth",
+        54.0 -> "etc"
       ).groupBy(_.currency)
         .map { case (currency, amounts) =>
           Amount(amounts.map(_.value).sum, currency)
