@@ -571,11 +571,6 @@ object Analyzer extends spells.Spells {
   def getHistory = {
     val currencies = getCurrencies
     val relevant = currencies.intersect(interestedIn)
-    if (false && relevant != interestedIn) {
-      throw new IllegalArgumentException {
-        s"Missing: ${interestedIn.filterNot(currencies)}"
-      }
-    } else {
       val matrixHistory = loadData
       val dataIsOld = {
         matrixHistory.isEmpty ||
@@ -592,7 +587,6 @@ object Analyzer extends spells.Spells {
       }
 
       all.filter(_.isValid)
-    }
   }
 
   def buildBalance(now: (Double, String)*) = {
@@ -606,15 +600,15 @@ object Analyzer extends spells.Spells {
     val history = getHistory
     val mined = buildBalance(
      // 0.48 -> "eth",
-      (0.32) -> "dash",
+      (0.33) -> "dash",
     //  8.07 -> "etc",
     )
 
     val gottenViaTransactions = {
       buildBalance(
-        113.0 -> "rads",
-        //17.765 -> "ltc",
-        3.82 -> "eth",
+        112.0 -> "rads",
+        19.21 -> "ltc",
+        //3.82 -> "eth",
         54.0 -> "etc"
       ).groupBy(_.currency)
         .map { case (currency, amounts) =>
