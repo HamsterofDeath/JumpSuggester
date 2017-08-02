@@ -62,12 +62,23 @@ object Analyzer extends spells.Spells {
   private val host = "https://api.changelly.com"
 
   private val interestedIn = {
-    Set("btc", "eth", "xmr",
-      "dash", "xrp", "etc",
-      "dcr", "nlg", "nav",
-      "ltc", "doge", "pivx",
-      "rads", "strat", "waves")
-      .map(Currency)
+    Set("btc",
+      "eth",
+      "xmr",
+      "dash",
+      "xrp",
+      "etc",
+      "nlg",
+      "nav",
+      "ltc",
+      "doge",
+      "pivx",
+      //"rads",
+      //"dcr",
+      "strat",
+      "waves"
+    )
+    .map(Currency)
   }
 
   def estimationFactor(currency: Currency) = {
@@ -606,10 +617,10 @@ object Analyzer extends spells.Spells {
 
     val gottenViaTransactions = {
       buildBalance(
-        112.0 -> "rads",
+        //112.0 -> "rads",
         19.21 -> "ltc",
         //3.82 -> "eth",
-        54.0 -> "etc"
+        84.0 -> "etc"
       ).groupBy(_.currency)
         .map { case (currency, amounts) =>
           Amount(amounts.map(_.value).sum, currency)
