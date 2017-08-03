@@ -73,8 +73,8 @@ object Analyzer extends spells.Spells {
       "ltc",
       "doge",
       "pivx",
-      //"rads",
-      //"dcr",
+     // "rads",
+      "dcr",
       "strat",
       "waves"
     )
@@ -619,8 +619,8 @@ object Analyzer extends spells.Spells {
       buildBalance(
         //112.0 -> "rads",
         19.21 -> "ltc",
-        //3.82 -> "eth",
-        84.0 -> "etc"
+        2.837 -> "eth",
+        44.0 -> "etc"
       ).groupBy(_.currency)
         .map { case (currency, amounts) =>
           Amount(amounts.map(_.value).sum, currency)
