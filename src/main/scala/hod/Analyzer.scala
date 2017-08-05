@@ -64,7 +64,9 @@ object Analyzer extends spells.Spells {
   private val interestedIn = {
     Set("btc",
       "eth",
-      "xmr","usdt","bcc",
+      "xmr",
+      "usdt",
+      "bcc",
       "dash",
       "xrp",
       "etc",
@@ -73,7 +75,7 @@ object Analyzer extends spells.Spells {
       "ltc",
       "doge",
       "pivx",
-     // "rads",
+      "rads",
       "dcr",
       "strat",
       "waves"
