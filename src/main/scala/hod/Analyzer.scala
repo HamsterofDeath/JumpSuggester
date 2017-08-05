@@ -62,12 +62,23 @@ object Analyzer extends spells.Spells {
   private val host = "https://api.changelly.com"
 
   private val interestedIn = {
-    Set("btc", "eth", "xmr","usdt","bcc",
-      "dash", "xrp", "etc",
-      "dcr", "nlg", "nav",
-      "ltc", "doge", "pivx",
-      "rads", "strat", "waves")
-      .map(Currency)
+    Set("btc",
+      "eth",
+      "xmr","usdt","bcc",
+      "dash",
+      "xrp",
+      "etc",
+      "nlg",
+      "nav",
+      "ltc",
+      "doge",
+      "pivx",
+     // "rads",
+      "dcr",
+      "strat",
+      "waves"
+    )
+    .map(Currency)
   }
 
   def estimationFactor(currency: Currency) = {
