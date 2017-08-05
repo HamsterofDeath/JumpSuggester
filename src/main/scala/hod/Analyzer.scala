@@ -36,7 +36,7 @@ object Analyzer extends spells.Spells {
 
   private val dateTimePatternFileName = "dd_MM_yyyy_HH_mm_ss"
   private val dateTimePatternCSV      = "dd.MM.yyyy HH:mm:ss"
-  private val timeLimitInMinutes      = 10
+  private val timeLimitInMinutes      = 5
 
   private val rootOfFiles = {
     List("/media/sf_vmsharedsync", "C:/Users/Test/Resilio Sync//vmsharedsync")
@@ -62,7 +62,7 @@ object Analyzer extends spells.Spells {
   private val host = "https://api.changelly.com"
 
   private val interestedIn = {
-    Set("btc", "eth", "xmr",
+    Set("btc", "eth", "xmr","usdt","bcc",
       "dash", "xrp", "etc",
       "dcr", "nlg", "nav",
       "ltc", "doge", "pivx",
@@ -74,6 +74,7 @@ object Analyzer extends spells.Spells {
     currency.code match {
       case "nlg" | "doge" => 10000
       case "xrp" => 250
+      case "btc" => 1
       case x => 25
     }
   }
@@ -195,8 +196,6 @@ object Analyzer extends spells.Spells {
       val altExchangeEarlier = s"$percentToAlternativeSwitch2% $details2"
       val details = s"$percentToAlternativeSwitch% $details1 || [alt exchange earlier] " + altExchangeEarlier
       val sharedDetails = details
-      val altResult = amountExchangedAlt1.formatSpacey.shiftRight(17)
-      val describeCompareToAction = s"$currency $now would be $sharedDetails"
       val describeCompareToNonAction = s"$currency $now would be [to unchanged] " +
         s"$percentToNonAction% -> $describeNonAction"
       if (improvementRatioToNonAction.isInfinity) {
@@ -600,16 +599,16 @@ object Analyzer extends spells.Spells {
     val history = getHistory
     val mined = buildBalance(
      // 0.48 -> "eth",
-      (0.33) -> "dash",
     //  8.07 -> "etc",
     )
 
     val gottenViaTransactions = {
       buildBalance(
-        112.0 -> "rads",
-        19.21 -> "ltc",
+       // 112.0 -> "rads",
+        (0.84) -> "dash",
+        1982.0 -> "usdt",
         //3.82 -> "eth",
-        54.0 -> "etc"
+       // 84.2 -> "etc"
       ).groupBy(_.currency)
         .map { case (currency, amounts) =>
           Amount(amounts.map(_.value).sum, currency)
