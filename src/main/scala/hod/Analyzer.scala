@@ -187,34 +187,36 @@ object Analyzer extends spells.Spells {
 
     def format = {
       val now = dfPrecise.format(ifExchangeIsDoneNow.value).shiftRight(10)
+      val amountSpace = 17
+      val currencySpace = 5
+      val targetCurrency = ifExchangeIsDoneNow.currency.code.shiftRight(currencySpace)
       val describeNonAction = {
         val elements = {
-          ifHadNotDoneTheExchange.map { e =>
-            s"${e.original.format.shiftRight(12)} (=${e.switched.formatSpacey.shiftRight(17)})"
-          }.mkString(" + ")
+          ifHadNotDoneTheExchange.map { _.format }.mkString(" + ")
         }
-        val sum = dfPrecise.format(amountExchangedIfHadKept).shiftRight(12)
-        s"$sum ($elements)"
+        val amount = dfPrecise.format(amountExchangedIfHadKept)
+        val sum = s"${amount} ${targetCurrency}".shiftRight(amountSpace)
+        s"$sum = $elements"
       }
       val percentToAlternativeSwitch = dfSigned.format((improvementRatioToSwitch - 1) * 100)
         .niceNumber
       val percentToAlternativeSwitch2 = dfSigned.format((improvementRatioToSwitch2 - 1) * 100)
         .niceNumber
       val percentToNonAction = dfSigned.format((improvementRatioToNonAction - 1) * 100).niceNumber
-      val currency = ifExchangeIsDoneNow.currency.code.shiftRight(5)
-      val details1 = amountExchangedAlt1.formatSpacey.shiftRight(17) + " = " +
+      val currency = targetCurrency
+      val details1 = amountExchangedAlt1.formatSpacey.shiftRight(amountSpace) + " = " +
         explainAlt1.map(_.format).mkString(" + ")
-      val details2 = amountExchangedAlt2.formatSpacey.shiftRight(17) + " = " +
+      val details2 = amountExchangedAlt2.formatSpacey.shiftRight(amountSpace) + " = " +
         explainAlt2.map(_.format).mkString(" + ")
       val altExchangeEarlier = s"$percentToAlternativeSwitch2% $details2"
-      val details = s"$percentToAlternativeSwitch% $details1 || [alt exchange earlier] " + altExchangeEarlier
+      val details = s"$percentToAlternativeSwitch% $details1 ||\n     [alt exchange earlier] " + altExchangeEarlier
       val sharedDetails = details
-      val describeCompareToNonAction = s"$currency $now would be [to unchanged] " +
-        s"$percentToNonAction% -> $describeNonAction"
+      val describeCompareToNonAction = s"$currency $now would be\n     [to unchanged]         " +
+        s"$percentToNonAction% $describeNonAction"
       if (improvementRatioToNonAction.isInfinity) {
         s"$currency $now compared to $altExchangeEarlier"
       } else {
-        s"$describeCompareToNonAction || [if done earlier] $sharedDetails"
+        s"$describeCompareToNonAction ||\n     [if done earlier]      $sharedDetails"
       }
     }
 
@@ -618,8 +620,8 @@ object Analyzer extends spells.Spells {
     val gottenViaTransactions = {
       buildBalance(
        // 112.0 -> "rads",
-        (0.84) -> "dash",
-        1982.0 -> "usdt",
+        //(0.84) -> "dash",
+        2140.0 -> "usdt",
         //3.82 -> "eth",
        // 84.2 -> "etc"
       ).groupBy(_.currency)
