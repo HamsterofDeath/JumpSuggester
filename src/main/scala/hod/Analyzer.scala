@@ -419,7 +419,7 @@ object Analyzer extends spells.Spells {
         val initialTransaction = {
           if (isMined) {
             balance.filter(_.currency == focusOnCurrency).map { e =>
-              val fake = Amount(0, Currency("magic"))
+              val fake = e
               Transaction(fake, e, earliest)
             }
           } else {
@@ -611,17 +611,36 @@ object Analyzer extends spells.Spells {
 
   def main(args: Array[String]): Unit = {
     val transactions = getTransactions
-    val history = getHistory
+
+    val assumedBalanceFromTransactions = {
+      val incoming = mutable.HashMap.empty[Currency, Double]
+      val outgoing = mutable.HashMap.empty[Currency, Double]
+      transactions.foreach { t =>
+        val soFarIn = incoming.getOrElseUpdate(t.given.currency, 0.0)
+        incoming.put(t.given.currency, soFarIn + t.given.value)
+
+        val soFarOut = incoming.getOrElseUpdate(t.gotten.currency, 0.0)
+        outgoing.put(t.gotten.currency, soFarOut + t.gotten.value)
+      }
+      outgoing.map { case (currency, amount) =>
+        val invested = incoming.getOrElse(currency, 0.0)
+        (amount - invested) -> currency.code
+      }.toList
+    }
+    val calculatedBalance = {
+      buildBalance(assumedBalanceFromTransactions:_*)
+    }
     val mined = buildBalance(
      // 0.48 -> "eth",
-    //  8.07 -> "etc",
+    //  3.27 -> "etc",
     )
 
     val gottenViaTransactions = {
       buildBalance(
-       // 112.0 -> "rads",
-        //(0.84) -> "dash",
-        2140.0 -> "usdt",
+        177.0 -> "rads",
+        3200.0 -> "nlg",
+        199.0 -> "pivx",
+        (1024.0 - 250) -> "usdt",
         //3.82 -> "eth",
        // 84.2 -> "etc"
       ).groupBy(_.currency)
@@ -629,10 +648,12 @@ object Analyzer extends spells.Spells {
           Amount(amounts.map(_.value).sum, currency)
         }.toList
     }
+    val history = getHistory
 
     val allOptions = {
       determinePossibleExchanges(mined, transactions, history, isMined = true) ++
-        determinePossibleExchanges(gottenViaTransactions, transactions, history, isMined = false)
+        determinePossibleExchanges(gottenViaTransactions, transactions, history, isMined = false) ++
+      Nil
     }
     allOptions.foreach { e =>
       val msg = e.format
