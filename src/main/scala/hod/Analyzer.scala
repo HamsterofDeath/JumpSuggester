@@ -633,16 +633,17 @@ object Analyzer extends spells.Spells {
     val mined = buildBalance(
      // 0.48 -> "eth",
     //  3.27 -> "etc",
+      //0.132 -> "dash"
     )
 
     val gottenViaTransactions = {
       buildBalance(
-        177.0 -> "rads",
-        3200.0 -> "nlg",
-        199.0 -> "pivx",
-        (1024.0 - 250) -> "usdt",
+        //177.0 -> "rads",
+        (6888.0+5994.0) -> "nlg",
+       // 199.0 -> "pivx",
+        //19.0 -> "usdt",
         //3.82 -> "eth",
-       // 84.2 -> "etc"
+        84.0 -> "etc"
       ).groupBy(_.currency)
         .map { case (currency, amounts) =>
           Amount(amounts.map(_.value).sum, currency)
@@ -660,7 +661,7 @@ object Analyzer extends spells.Spells {
       println(msg)
     }
 
-    history.last.currencies.foreach { c =>
+    history.last.currencies.sortBy(_.code).foreach { c =>
       val total = (gottenViaTransactions++mined).map { e => history.last.estimateExchangeResult(e, c) }
         .map(_.switched.value).sum
       println(
