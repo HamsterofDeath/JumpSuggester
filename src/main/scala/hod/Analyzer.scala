@@ -19,6 +19,7 @@ import org.json4s.jackson.JsonMethods
 import org.json4s.{DefaultFormats, JObject, JsonAST}
 
 object Analyzer extends spells.Spells {
+  val tetherUSD = Currency("usdt")
 
   implicit class StringOps(val str: String) extends AnyVal {
     def shiftRight(i: Int) = str.reverse.padTo(i, ' ').reverse
@@ -108,6 +109,11 @@ object Analyzer extends spells.Spells {
   }
 
   case class Amount(value: Double, currency: Currency) {
+    def +(amount: Amount) = {
+      assert(currency == amount.currency)
+      copy(value + amount.value)
+    }
+
     def format = s"${dfPrecise.format(value)} ${currency.code}"
 
     def formatSpacey = s"${dfPrecise.format(value)} ${currency.code.shiftRight(5)}"
@@ -156,14 +162,15 @@ object Analyzer extends spells.Spells {
 
   case class ExchangeGuesstimationForWallet(balance: Amount, currency: Currency,
                                             options: List[ExchangeGuesstimation],
-                                            originalCost: List[Amount]) {
+                                            originalCost: List[Amount],
+                                            value:Amount, oldValue:Amount) {
 
     private def cost = {
       originalCost.map(_.format).mkString(" + ")
     }
 
     def format = {
-      s"""|It is possible to exchange an amount of ${balance.format} (cost: $cost) for
+      s"""|It is possible to exchange an amount of ${balance.format} (cost: $cost, value now ${value.format}, was: ${oldValue.format}) for
           |${options.map(_.format).mkString("\n")}
        """.stripMargin
     }
@@ -402,6 +409,7 @@ object Analyzer extends spells.Spells {
                                  isMined:Boolean):
   Seq[Analyzer.ExchangeGuesstimationForWallet] = {
     val earliest = checkAgainst.map(_.lastDate).minBy(_.getMillis)
+    val latest = checkAgainst.maxBy(_.lastDate.getMillis)
     val currencies = {
       val relevant = balance.map(_.currency) ++ transactionHistory.map(_.gotten.currency)
       relevant.distinct.sortBy(_.code)
@@ -466,7 +474,7 @@ object Analyzer extends spells.Spells {
 
       }
 
-      val cost = {
+      val (cost, orgValue) = {
         val targetAmount = currentBalance.value
         val pool = mutable.ArrayBuffer.empty ++= calcIncoming(false)
         val collected = mutable.ArrayBuffer.empty[Transaction]
@@ -491,11 +499,18 @@ object Analyzer extends spells.Spells {
           }
           collected += use
         }
-        collected.toList.map(_.given)
+        val relevantTransactions = collected.toList
+        val cost = relevantTransactions.map(_.given)
+        val originalTetherValue = relevantTransactions.map { t =>
+          val closest = checkAgainst.minBy(e => (e.lastDate.getMillis - t.when.getMillis).abs)
+          closest.estimateExchangeResult(t.given, tetherUSD).switched
+        }.reduce(_ + _)
+        (cost, originalTetherValue)
       }
       val incomingCutOff = calcIncoming(true).sortBy(_.when.getMillis)
       val options = determinePossibleExchangesForSingleWallet(incomingCutOff, checkAgainst)
-      ExchangeGuesstimationForWallet(currentBalance, focusOnCurrency, options, cost)
+      val value = latest.estimateExchangeResult(currentBalance, tetherUSD).switched
+      ExchangeGuesstimationForWallet(currentBalance, focusOnCurrency, options, cost, value, orgValue)
     }.sortBy(_.bestOption.sortBy).reverse
   }
 
