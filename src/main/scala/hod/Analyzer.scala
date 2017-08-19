@@ -36,7 +36,7 @@ object Analyzer extends spells.Spells {
 
   private val dateTimePatternFileName = "dd_MM_yyyy_HH_mm_ss"
   private val dateTimePatternCSV      = "dd.MM.yyyy HH:mm:ss"
-  private val timeLimitInMinutes      = 5
+  private val timeLimitInMinutes      = 1
 
   private val rootOfFiles = {
     List("/media/sf_vmsharedsync", "C:/Users/Test/Resilio Sync//vmsharedsync")
@@ -631,24 +631,25 @@ object Analyzer extends spells.Spells {
       buildBalance(assumedBalanceFromTransactions:_*)
     }
     val mined = buildBalance(
-     // 0.48 -> "eth",
+     // 0.52 -> "eth",
     //  3.27 -> "etc",
-      //0.132 -> "dash"
+    //  0.24 -> "dash"
     )
 
     val gottenViaTransactions = {
       buildBalance(
         //72.0 -> "rads",
-        //5489.0 -> "nav",
+        1340.0 -> "nav",
        // 6648.0 -> "nlg",
-        //259.0 -> "pivx",
+       // 8.0 -> "pivx",
        // 77.0 -> "strat",
-       // 146.0-> "waves",
+        72.0-> "waves",
         //500.0 -> "usdt",
-        //74.0 -> "rads",
+        32.0 -> "rads",
         //1.0 -> "bcc",
-        6175.0 -> "xrp",
-        //91.0 -> "strat",
+       // 6175.0 -> "xrp",
+        44.0 -> "strat",
+        0.58 -> "eth",
         //22.0 -> "etc"
       ).groupBy(_.currency)
         .map { case (currency, amounts) =>
