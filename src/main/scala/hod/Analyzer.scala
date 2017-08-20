@@ -87,8 +87,9 @@ object Analyzer extends spells.Spells {
   def estimationFactor(currency: Currency) = {
     currency.code match {
       case "nlg" | "doge" => 10000
-      case "xrp" => 250
+      case "xrp"| "nav" => 250
       case "btc" => 1
+      case "bcc" => 1
       case x => 25
     }
   }
@@ -654,16 +655,16 @@ object Analyzer extends spells.Spells {
     val gottenViaTransactions = {
       buildBalance(
         //72.0 -> "rads",
-        143.0 -> "nav",
+        826.0 -> "nav",
        // 6648.0 -> "nlg",
         8.0 -> "pivx",
-        18.0 -> "strat",
-     //   71.5-> "waves",
+       // 18.0 -> "strat",
+        7.4-> "waves",
         //500.0 -> "usdt",
         (32.0+48+ 18.77) -> "rads",
         //1.0 -> "bcc",
         0.082 -> "btc",
-        662.0 -> "xrp",
+       // 662.0 -> "xrp",
         //44.0 -> "strat",
         0.58 -> "eth",
         //22.0 -> "etc"
