@@ -654,13 +654,13 @@ object Analyzer extends spells.Spells {
 
     val gottenViaTransactions = {
       buildBalance(
-        93.0 -> "rads",
-        //191.0 -> "nav",
+        //51.0 -> "rads",
+        1983.0 -> "nav",
        // 6648.0 -> "nlg",
-      //  286.0 -> "pivx",
-        183.0 -> "strat",
+        162.0 -> "pivx",
+      //  52.0 -> "strat",
         //7.4-> "waves",
-        //500.0 -> "usdt",
+        (525.0+236) -> "usdt",
       //  (32.0+48+ 18.77) -> "rads",
         //1.0 -> "bcc",
        // 0.082 -> "btc",
