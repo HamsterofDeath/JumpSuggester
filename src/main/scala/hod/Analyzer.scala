@@ -80,7 +80,7 @@ object Analyzer extends spells.Spells {
       "rads",
       "dcr",
       "strat",
-      "waves"
+//      "waves"
     )
     .map(Currency)
   }
@@ -539,20 +539,24 @@ object Analyzer extends spells.Spells {
     }
     targetCurrencies.map { targetCurrency =>
       def simulateExchange(getAmount: Transaction => Amount): List[ExchangedAmount] = {
-        incomes.map { income =>
+        incomes.flatMap { income =>
           if (income.gotten.currency == targetCurrency) {
-            ExchangedAmount(income.given, income.gotten, income.toRate)
+            Some(ExchangedAmount(income.given, income.gotten, income.toRate))
           } else {
             val withRates = against.filter(_.hasRatesFor(getAmount(income).currency, targetCurrency) ||
               getAmount(income).currency.code == "magic")
-            if (withRates.isEmpty) throw new RuntimeException(s"Could not find matrix which has data from ${getAmount(income).currency} to $targetCurrency")
-            val closestMatch = withRates.minBy { e =>
-              (e.lastDate.getMillis - income.when.getMillis).abs
+            if (withRates.isEmpty) {
+              println(s"Could not find matrix which has data from ${getAmount(income).currency} to $targetCurrency")
+              None
+            } else {
+              val closestMatch = withRates.minBy { e =>
+                (e.lastDate.getMillis - income.when.getMillis).abs
+              }
+              val day = 1000 * 60 * 60 * 24
+              val beSuspicious = (closestMatch.lastDate.getMillis - income.when.getMillis).abs > day
+              Some(closestMatch.estimateExchangeResult(getAmount(income), targetCurrency)
+              .copy(unprecise = beSuspicious))
             }
-            val day = 1000 * 60 * 60 * 24
-            val beSuspicious = (closestMatch.lastDate.getMillis - income.when.getMillis).abs > day
-            closestMatch.estimateExchangeResult(getAmount(income), targetCurrency)
-              .copy(unprecise = beSuspicious)
           }
         }
       }
@@ -655,18 +659,18 @@ object Analyzer extends spells.Spells {
 
     val gottenViaTransactions = {
       buildBalance(
-        47.0 -> "rads",
-        1983.0 -> "nav",
+        70.0 -> "rads",
+    //    1983.0 -> "nav",
        // 6648.0 -> "nlg",
-        162.0 -> "pivx",
-      //  52.0 -> "strat",
-        //7.4-> "waves",
-        150.0 -> "usdt",
+    //    162.0 -> "pivx",
+        73.0 -> "strat",
+     //   31.5-> "waves",
+        516.0 -> "usdt",
       //  (32.0+48+ 18.77) -> "rads",
         0.229 -> "bcc",
        // 0.082 -> "btc",
         521.0 -> "xrp",
-        17.0 -> "lsk",
+        //17.0 -> "lsk",
         //44.0 -> "strat",
         //0.58 -> "eth",
         //22.0 -> "etc"
