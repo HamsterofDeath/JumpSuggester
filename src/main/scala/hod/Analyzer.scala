@@ -80,7 +80,7 @@ object Analyzer extends spells.Spells {
       "rads",
       "dcr",
       "strat",
-//      "waves"
+      "waves"
     )
     .map(Currency)
   }
@@ -663,7 +663,7 @@ object Analyzer extends spells.Spells {
     //    1983.0 -> "nav",
        // 6648.0 -> "nlg",
     //    162.0 -> "pivx",
-        73.0 -> "strat",
+        76.0 -> "strat",
      //   31.5-> "waves",
         516.0 -> "usdt",
       //  (32.0+48+ 18.77) -> "rads",
