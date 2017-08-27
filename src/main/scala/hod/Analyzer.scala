@@ -659,20 +659,21 @@ object Analyzer extends spells.Spells {
 
     val gottenViaTransactions = {
       buildBalance(
-        70.0 -> "rads",
+        87.0 -> "rads",
     //    1983.0 -> "nav",
        // 6648.0 -> "nlg",
     //    162.0 -> "pivx",
-        76.0 -> "strat",
+       // 5.15 -> "dcr",
+        1.0 -> "strat",
      //   31.5-> "waves",
         516.0 -> "usdt",
       //  (32.0+48+ 18.77) -> "rads",
         0.229 -> "bcc",
        // 0.082 -> "btc",
-        521.0 -> "xrp",
+        980.0 -> "xrp",
         //17.0 -> "lsk",
         //44.0 -> "strat",
-        //0.58 -> "eth",
+        0.93 -> "eth",
         //22.0 -> "etc"
       ).groupBy(_.currency)
         .map { case (currency, amounts) =>
