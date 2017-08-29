@@ -659,7 +659,7 @@ object Analyzer extends spells.Spells {
 
     val gottenViaTransactions = {
       buildBalance(
-        (0.488+0.24) -> "bcc",
+        0.72 -> "bcc",
         // 0.082 -> "btc",
        // 0.095 -> "dash",
         0.9 -> "dcr",
