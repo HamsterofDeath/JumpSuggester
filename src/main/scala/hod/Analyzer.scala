@@ -665,13 +665,13 @@ object Analyzer extends spells.Spells {
         0.9 -> "dcr",
        // 0.51 -> "eth",
         3.14 -> "etc",
-        59.0 -> "lsk",
+//        59.0 -> "lsk",
        // 0.47 -> "ltc",
       //  263.0 -> "nav",
         // 6648.0 -> "nlg",
        // 10.5 -> "pivx",
-        89.0 -> "rads",
-        37.3 -> "strat",
+        190.0 -> "rads",
+      //  37.3 -> "strat",
      //   118.0 -> "usdt",
         //   31.5-> "waves",
        // 1740.0 -> "xrp",
@@ -698,6 +698,5 @@ object Analyzer extends spells.Spells {
       println(
         s"Total balance in ${c.code.shiftRight(5)} = ${dfPrecise.format(total).shiftRight(12)}")
     }
-
   }
 }
