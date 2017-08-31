@@ -135,6 +135,8 @@ object Analyzer extends spells.Spells {
     }
   }
 
+  case class ExchangeOptionRecord(from: String, to: String, amount: String, result: String)
+
   case class TransactionRecord(status: String, amountFrom: String, amountTo: String,
                                currencyFrom: String, currencyTo: String, createdAt: Long) {
 
@@ -306,6 +308,10 @@ object Analyzer extends spells.Spells {
   }
 
   def doJsonPost[T: Manifest](method: String, params: (String, String)*) = {
+    doJsonPostMaybeArray[T](method, List(params.toList))
+  }
+
+  def doJsonPostMaybeArray[T: Manifest](method: String, params: List[List[(String, String)]]) = {
     def consumeStream(in: InputStream) = {
       val bytes = {
         Iterator.continually(in.read())
@@ -323,20 +329,30 @@ object Analyzer extends spells.Spells {
     post.addHeader("api-key", key)
     post.addHeader("Content-type", "application/json")
 
-    val values = {
-      params.map {
-        case (jKey, jValue) =>
-          val jsonValue = {
-            Try(jValue.toInt)
-            .orElse(Try(jValue.toDouble))
-            .orElse(Try(jValue)) match {
-              case Success(i: Int) => JsonAST.JInt(i)
-              case Success(d: Double) => JsonAST.JDouble(d)
-              case Success(s: String) => JsonAST.JString(s)
-              case _ => throw new IllegalStateException("crash")
+    val actualParams = {
+      def singleToJson(single: List[(String, String)]) = {
+        single.map {
+          case (jKey, jValue) =>
+            val jsonValue = {
+              Try(jValue.toInt)
+              .orElse(Try(jValue.toDouble))
+              .orElse(Try(jValue)) match {
+                case Success(i: Int) => JsonAST.JInt(i)
+                case Success(d: Double) => JsonAST.JDouble(d)
+                case Success(s: String) => JsonAST.JString(s)
+                case _ => throw new IllegalStateException("crash")
+              }
             }
-          }
-          JsonAST.JField(jKey, jsonValue)
+            JsonAST.JField(jKey, jsonValue)
+        }
+      }
+      if (params.size == 1) {
+        JsonAST.JObject(singleToJson(params.head))
+      } else {
+        val elements = params.map(singleToJson).map { elems =>
+          JsonAST.JObject(elems)
+        }
+        JsonAST.JArray(elements)
       }
     }
 
@@ -344,7 +360,7 @@ object Analyzer extends spells.Spells {
       JsonAST.JField("jsonrpc", JsonAST.JString("2.0")),
       JsonAST.JField("id", JsonAST.JInt(1)),
       JsonAST.JField("method", JsonAST.JString(method)),
-      JsonAST.JField("params", JsonAST.JObject(values.toList))
+      JsonAST.JField("params", actualParams)
     )
 
     val jsonPost = JsonMethods.compact(JsonMethods.render(requestParams))
@@ -381,25 +397,44 @@ object Analyzer extends spells.Spells {
     doJsonPost[List[String]]("getCurrencies").map(Currency).toSet
   }
 
+  def getExchangeRatios(pairs: List[(Currency, Currency)]) = {
+    val query = pairs.map { case (from, to) =>
+      ("from", from.code) :: ("to", to.code) :: ("amount", estimationFactor(from).toString) :: Nil
+    }
+    val ratios = doJsonPostMaybeArray[List[ExchangeOptionRecord]]("getExchangeAmount", query)
+    ratios.map { ratio =>
+      val from = Currency(ratio.from)
+      val to = Currency(ratio.to)
+      val result = ratio.result
+      val factor = estimationFactor(from)
+      Rate(from, to, (BigDecimal(result) / factor).toDouble, DateTime.now)
+    }
+  }
+
   def getExchangeRatio(from: Currency, to: Currency) = {
     val factor = estimationFactor(from)
-    val ratio = doJsonPost[String]("getExchangeAmount", ("from", from.code), ("to", to.code),
+    val amount = doJsonPost[String]("getExchangeAmount", ("from", from.code), ("to", to.code),
       ("amount", factor.toString))
-    Rate(from, to, (BigDecimal(ratio) / factor).toDouble, DateTime.now)
+    Rate(from, to, (BigDecimal(amount) / factor).toDouble, DateTime.now)
   }
 
   def buildMatrix(currencies: Set[Currency]) = {
     def tryGet = {
       println("Downloading exchange rates...")
       val sorted = currencies.toList.sortBy(_.code)
-      val data = sorted.flatMap { from =>
-        sorted.flatMap { to =>
-          if (from != to) {
-            Some(getExchangeRatio(from, to))
-          } else {
-            None
+      val data = {
+        val pairs = {
+          sorted.flatMap { from =>
+            sorted.flatMap { to =>
+              if (from != to) {
+                Some((from, to))
+              } else {
+                None
+              }
+            }
           }
         }
+        getExchangeRatios(pairs)
       }
       val latest = data.map(_.recordedAt).maxBy(_.getMillis)
       RateMatrix(latest, data)
@@ -662,19 +697,19 @@ object Analyzer extends spells.Spells {
 
     val gottenViaTransactions = {
       buildBalance(
-      //  0.72 -> "bcc",
+        //  0.72 -> "bcc",
         // 0.082 -> "btc",
         // 0.095 -> "dash",
         12.79 -> "dcr",
         // 0.51 -> "eth",
         //0.0 -> "etc",
         //58.0 -> "lsk",
-       // 3.98 -> "ltc",
+        // 3.98 -> "ltc",
         //  263.0 -> "nav",
         // 6648.0 -> "nlg",
-         180.0 -> "pivx",
-        57.0 -> "rads",
-        //118.9 -> "strat",
+        180.0 -> "pivx",
+        //57.0 -> "rads",
+        51.5 -> "strat",
         //   118.0 -> "usdt",
         //   31.5-> "waves",
         1920.0 -> "xrp",
