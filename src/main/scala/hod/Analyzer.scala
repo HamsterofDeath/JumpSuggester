@@ -455,9 +455,10 @@ object Analyzer extends spells.Spells {
       relevant.distinct.sortBy(_.code)
     }
 
-    currencies.filter { c =>
+    val ownedCurrencies = currencies.filter { c =>
       balance.exists(_.currency == c)
-    }.map { focusOnCurrency =>
+    }
+    ownedCurrencies.map { focusOnCurrency =>
       val currentBalance = {
         balance.find(_.currency == focusOnCurrency)
         .getOrElse(Amount(0, focusOnCurrency))
@@ -561,7 +562,7 @@ object Analyzer extends spells.Spells {
 
     val walletCurrency = incomes.head.gotten.currency
 
-    val targetCurrencies = against.head.currencies.filter(_ != walletCurrency)
+    val targetCurrencies = against.last.currencies.filter(_ != walletCurrency)
     val mostRecent = {
       val allRatesNewestFirst = against.flatMap(_.rates).sortBy(_.recordedAt.getMillis).reverse
       val newestWithFallback = {
@@ -706,13 +707,13 @@ object Analyzer extends spells.Spells {
         //58.0 -> "lsk",
         // 3.98 -> "ltc",
         //  263.0 -> "nav",
-        // 6648.0 -> "nlg",
+        2930.0 -> "nlg",
         //180.0 -> "pivx",
-        82.8 -> "rads",
-        50.6 -> "strat",
+        157.8 -> "rads",
+        //50.6 -> "strat",
         //   118.0 -> "usdt",
         //   31.5-> "waves",
-        1920.0 -> "xrp",
+      //  1920.0 -> "xrp"
       ).groupBy(_.currency)
       .map { case (currency, amounts) =>
         Amount(amounts.map(_.value).sum, currency)
@@ -721,7 +722,7 @@ object Analyzer extends spells.Spells {
     val history = getHistory
 
     val allOptions = {
-      determinePossibleExchanges(mined, transactions, history, isMined = true) ++
+      //determinePossibleExchanges(mined, transactions, history, isMined = true) ++
       determinePossibleExchanges(gottenViaTransactions, transactions, history, isMined = false) ++
       Nil
     }
