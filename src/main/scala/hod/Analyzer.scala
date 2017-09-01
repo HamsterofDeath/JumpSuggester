@@ -672,30 +672,6 @@ object Analyzer extends spells.Spells {
   def main(args: Array[String]): Unit = {
     val transactions = getTransactions
 
-    val assumedBalanceFromTransactions = {
-      val incoming = mutable.HashMap.empty[Currency, Double]
-      val outgoing = mutable.HashMap.empty[Currency, Double]
-      transactions.foreach { t =>
-        val soFarIn = incoming.getOrElseUpdate(t.given.currency, 0.0)
-        incoming.put(t.given.currency, soFarIn + t.given.value)
-
-        val soFarOut = incoming.getOrElseUpdate(t.gotten.currency, 0.0)
-        outgoing.put(t.gotten.currency, soFarOut + t.gotten.value)
-      }
-      outgoing.map { case (currency, amount) =>
-        val invested = incoming.getOrElse(currency, 0.0)
-        (amount - invested) -> currency.code
-      }.toList
-    }
-    val calculatedBalance = {
-      buildBalance(assumedBalanceFromTransactions: _*)
-    }
-    val mined = buildBalance(
-      // 0.52 -> "eth",
-      //  3.27 -> "etc",
-      //  0.24 -> "dash"
-    )
-
     val gottenViaTransactions = {
       buildBalance(
         //  0.72 -> "bcc",
@@ -712,7 +688,7 @@ object Analyzer extends spells.Spells {
         151.8 -> "rads",
         //50.6 -> "strat",
         //   118.0 -> "usdt",
-           68.5 -> "waves",
+           73.3 -> "waves",
       0.21 -> "xmr"
       //  1920.0 -> "xrp"
       ).groupBy(_.currency)
@@ -723,7 +699,6 @@ object Analyzer extends spells.Spells {
     val history = getHistory
 
     val allOptions = {
-      //determinePossibleExchanges(mined, transactions, history, isMined = true) ++
       determinePossibleExchanges(gottenViaTransactions, transactions, history, isMined = false) ++
       Nil
     }
@@ -733,8 +708,11 @@ object Analyzer extends spells.Spells {
     }
 
     history.last.currencies.sortBy(_.code).foreach { c =>
-      val total = (gottenViaTransactions ++ mined).map { e => history.last.estimateExchangeResult(e, c) }
-                  .map(_.switched.value).sum
+      val total = {
+        gottenViaTransactions.map { e =>
+          history.last.estimateExchangeResult(e, c)
+        }.map(_.switched.value).sum
+      }
       println(
         s"Total balance in ${c.code.shiftRight(5)} = ${dfPrecise.format(total).shiftRight(12)}")
     }
