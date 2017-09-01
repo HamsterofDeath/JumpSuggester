@@ -709,10 +709,11 @@ object Analyzer extends spells.Spells {
         //  263.0 -> "nav",
         2930.0 -> "nlg",
         //180.0 -> "pivx",
-        157.8 -> "rads",
+        151.8 -> "rads",
         //50.6 -> "strat",
         //   118.0 -> "usdt",
         //   31.5-> "waves",
+      0.21 -> "xmr"
       //  1920.0 -> "xrp"
       ).groupBy(_.currency)
       .map { case (currency, amounts) =>
