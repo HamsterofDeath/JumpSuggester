@@ -517,14 +517,18 @@ object Analyzer extends spells.Spells {
 
       val (cost, orgValue) = {
         val targetAmount = currentBalance.value
-        val pool = mutable.ArrayBuffer.empty ++= calcIncoming(false)
+        val totalIncoming = calcIncoming(false)
+        val pool = mutable.ArrayBuffer.empty ++= totalIncoming
         val collected = mutable.ArrayBuffer.empty[Transaction]
 
         def collectedSum = collected.map(_.gotten.value).sum
 
-        while (collectedSum < targetAmount) {
+        def needsMore = {
+          math.abs(collectedSum - targetAmount) > 0.0001 && collectedSum < targetAmount
+        }
+        while (needsMore)  {
           if (pool.isEmpty) {
-            throw new IllegalStateException("could not reconstruct payment")
+            throw new IllegalStateException(s"could not reconstruct source of $currentBalance out of $totalIncoming")
           }
 
           val available = pool.last
@@ -680,15 +684,15 @@ object Analyzer extends spells.Spells {
      //   12.79 -> "dcr",
         // 0.51 -> "eth",
         //0.0 -> "etc",
-        //58.0 -> "lsk",
-       3.586 -> "ltc",
-        //  263.0 -> "nav",
-        7996.0 -> "nlg",
-        //180.0 -> "pivx",
+        22.8 -> "lsk",
+      // 3.586 -> "ltc",
+       //   203.0 -> "nav",
+        7078.0 -> "nlg",
+       // 81.0 -> "pivx",
       //  46.0 -> "rads",
-        65.4 -> "strat",
+        47.8 -> "strat",
         //   118.0 -> "usdt",
-       //    73.3 -> "waves",
+           79.0 -> "waves",
       0.21 -> "xmr"
       //  1920.0 -> "xrp"
       ).groupBy(_.currency)
