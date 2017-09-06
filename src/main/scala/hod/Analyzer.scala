@@ -682,7 +682,7 @@ object Analyzer extends spells.Spells {
         // 0.082 -> "btc",
         // 0.095 -> "dash",
         //2.56 -> "dcr",
-        0.25 -> "eth",
+        0.26 -> "eth",
         //0.0 -> "etc",
         //37.0 -> "lsk",
        5.68 -> "ltc",
