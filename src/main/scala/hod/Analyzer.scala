@@ -87,7 +87,8 @@ object Analyzer extends spells.Spells {
 
   def estimationFactor(currency: Currency) = {
     currency.code match {
-      case "nlg" | "doge" => 10000
+      case "doge" => 100000
+      case "nlg" => 10000
       case "xrp" | "nav" | "usdt" => 250
       case "pivx" | "strat" | "rads" | "lsk" => 50
       case "etc" => 15
@@ -681,18 +682,19 @@ object Analyzer extends spells.Spells {
         //  0.72 -> "bcc",
         // 0.082 -> "btc",
         // 0.095 -> "dash",
+        78682.0 -> "doge",
         //2.56 -> "dcr",
-        0.26 -> "eth",
+        //0.26 -> "eth",
         //0.0 -> "etc",
         //37.0 -> "lsk",
-       5.68 -> "ltc",
+    //   0.68 -> "ltc",
       //  234.0 -> "nav",
-        2530.0 -> "nlg",
+        3008.0 -> "nlg",
       //  92.0 -> "pivx",
-       // 49.0 -> "rads",
-        52.5 -> "strat",
+        41.9 -> "rads",
+        91.0 -> "strat",
         //(504+395.0+220.0) -> "usdt",
-           77.0 -> "waves",
+           37.0 -> "waves",
    //   0.21 -> "xmr"
       //  1437.0 -> "xrp"
       ).groupBy(_.currency)
