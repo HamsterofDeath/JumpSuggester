@@ -438,7 +438,7 @@ object Analyzer extends spells.Spells {
         getExchangeRatios(pairs)
       }
       val latest = data.map(_.recordedAt).maxBy(_.getMillis)
-      RateMatrix(latest, data)
+      RateMatrix(latest, data.filter(_.factor != 0.00))
     }
 
     Iterator.continually(tryGet).find(_.isValid).head
@@ -682,14 +682,14 @@ object Analyzer extends spells.Spells {
         //  0.72 -> "bcc",
         // 0.082 -> "btc",
         // 0.095 -> "dash",
-        227916.0 -> "doge",
-        16.62 -> "dcr",
+        339516.0 -> "doge",
+        //16.62 -> "dcr",
         //0.2 -> "eth",
         //0.0 -> "etc",
    //     15.9 -> "lsk",
         //5.31 -> "ltc",
-        512.9 -> "nav",
-        //2152.0 -> "nlg",
+        614.9 -> "nav",
+        1129.0 -> "nlg",
       //  70.0 -> "pivx",
        // 60.9 -> "rads",
        // 22.6 -> "strat",
