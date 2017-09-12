@@ -686,7 +686,7 @@ object Analyzer extends spells.Spells {
       //  4.94 -> "dcr",
         //0.2 -> "eth",
         //0.0 -> "etc",
-   //     15.9 -> "lsk",
+        15.17 -> "lsk",
         //5.31 -> "ltc",
        // 73.9 -> "nav",
         //1129.0 -> "nlg",
@@ -694,7 +694,7 @@ object Analyzer extends spells.Spells {
         43.8 -> "rads",
         42.7 -> "strat",
         //(504+395.0+220.0) -> "usdt",
-        20.7 -> "waves",
+       // 20.7 -> "waves",
    //   0.21 -> "xmr"
       //  1437.0 -> "xrp"
       ).groupBy(_.currency)
