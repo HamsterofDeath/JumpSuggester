@@ -90,7 +90,8 @@ object Analyzer extends spells.Spells {
       case "doge" => 100000
       case "nlg" => 10000
       case "xrp" | "nav" | "usdt" => 250
-      case "pivx" | "strat" | "rads" | "lsk" => 50
+      case "pivx" => 150
+      case "strat" | "rads" | "lsk" => 50
       case "etc" => 15
       case "ltc" | "dcr" => 5
       case "bcc" | "dash" | "eth" | "xmr" => 2
@@ -686,15 +687,15 @@ object Analyzer extends spells.Spells {
       //  4.94 -> "dcr",
         //0.2 -> "eth",
         //0.0 -> "etc",
-    //    15.17 -> "lsk",
+        38.0 -> "lsk",
         //5.31 -> "ltc",
-        1385.0 -> "nav",
+        341.0 -> "nav",
         //872.0 -> "nlg",
-      //  111.5 -> "pivx",
+        102.0 -> "pivx",
       //  26.0 -> "rads",
-     //   20.7 -> "strat",
+        50.0 -> "strat",
         //(504+395.0+220.0) -> "usdt",
-       // 20.7 -> "waves",
+        49.0 -> "waves",
    //   0.21 -> "xmr"
       //  1093.0 -> "xrp"
       ).groupBy(_.currency)
