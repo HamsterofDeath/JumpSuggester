@@ -690,7 +690,7 @@ object Analyzer extends spells.Spells {
         //5.31 -> "ltc",
         902.0 -> "nav",
         //872.0 -> "nlg",
-        (46.0+66) -> "pivx",
+        111.5 -> "pivx",
         26.0 -> "rads",
      //   20.7 -> "strat",
         //(504+395.0+220.0) -> "usdt",
