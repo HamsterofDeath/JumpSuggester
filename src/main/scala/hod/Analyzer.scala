@@ -682,21 +682,21 @@ object Analyzer extends spells.Spells {
         //  0.72 -> "bcc",
         // 0.082 -> "btc",
         // 0.095 -> "dash",
-        339516.0 -> "doge",
+       // 139516.0 -> "doge",
       //  4.94 -> "dcr",
         //0.2 -> "eth",
         //0.0 -> "etc",
     //    15.17 -> "lsk",
         //5.31 -> "ltc",
-        777.0 -> "nav",
-        872.0 -> "nlg",
-        //42.9 -> "pivx",
-        //43.8 -> "rads",
-        //42.7 -> "strat",
+        902.0 -> "nav",
+        //872.0 -> "nlg",
+        (46.0+66) -> "pivx",
+        26.0 -> "rads",
+     //   20.7 -> "strat",
         //(504+395.0+220.0) -> "usdt",
        // 20.7 -> "waves",
    //   0.21 -> "xmr"
-      //  1437.0 -> "xrp"
+      //  1093.0 -> "xrp"
       ).groupBy(_.currency)
       .map { case (currency, amounts) =>
         Amount(amounts.map(_.value).sum, currency)
