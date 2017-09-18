@@ -685,18 +685,18 @@ object Analyzer extends spells.Spells {
         // 0.095 -> "dash",
        // 139516.0 -> "doge",
       //  11.79 -> "dcr",
-      //  1.04 -> "eth",
+     //   3.97 -> "eth",
         //0.0 -> "etc",
         //47.0 -> "lsk",
-        13.06 -> "ltc",
-        594.0 -> "nav",
-       // 2427.0 -> "nlg",
+       // 13.06 -> "ltc",
+       // 996.0 -> "nav",
+        2136.0 -> "nlg",
        // 102.0 -> "pivx",
-     //   28.0 -> "rads",
+        53.0 -> "rads",
      //   29.0 -> "strat",
-        //(504+395.0+220.0) -> "usdt",
+        261.0 -> "usdt",
         //49.0 -> "waves",
-   //   0.21 -> "xmr"
+      2.83 -> "xmr"
       //  1093.0 -> "xrp"
       ).groupBy(_.currency)
       .map { case (currency, amounts) =>
