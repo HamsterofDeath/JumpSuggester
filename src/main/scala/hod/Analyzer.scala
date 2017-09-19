@@ -689,14 +689,14 @@ object Analyzer extends spells.Spells {
         0.0 -> "etc",
         0.0 -> "lsk",
         0.0 -> "ltc",
-        248.0 -> "nav",
+        760.0 -> "nav",
         0.0 -> "nlg",
         0.0 -> "pivx",
-        53.0 -> "rads",
-        0.0 -> "strat",
-        261.0 -> "usdt",
+        26.0 -> "rads",
+        29.0 -> "strat",
+        0.0 -> "usdt",
         0.0 -> "waves",
-        2.83 -> "xmr",
+        0.0 -> "xmr",
         0.0 -> "xrp"
       )
       .filter(_.value > 0)
