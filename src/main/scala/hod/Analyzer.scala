@@ -693,7 +693,7 @@ object Analyzer extends spells.Spells {
         0.0 -> "nlg",
         0.0 -> "pivx",
         49.0 -> "rads",
-        48.0 -> "strat",
+        76.0 -> "strat",
         0.0 -> "usdt",
         58.0 -> "waves",
         0.0 -> "xmr",
