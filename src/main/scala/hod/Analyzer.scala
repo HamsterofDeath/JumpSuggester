@@ -689,15 +689,15 @@ object Analyzer extends spells.Spells {
         0.0 -> "etc",
         0.0 -> "lsk",
         0.0 -> "ltc",
-        0.0 -> "nav",
+        418.0 -> "nav",
         2886.0 -> "nlg",
         0.0 -> "pivx",
-        37.0 -> "rads",
-        42.0 -> "strat",
+        0.0 -> "rads",
+        77.0 -> "strat",
         0.0 -> "usdt",
         0.0 -> "waves",
         0.0 -> "xmr",
-        1773.0 -> "xrp"
+        0.0 -> "xrp"
       )
       .filter(_.value > 0)
       .groupBy(_.currency)
