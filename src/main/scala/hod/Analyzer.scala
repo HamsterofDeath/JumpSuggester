@@ -689,7 +689,7 @@ object Analyzer extends spells.Spells {
         0.0 -> "etc",
         0.0 -> "lsk",
         0.0 -> "ltc",
-        436.0 -> "nav",
+        459.0 -> "nav",
         0.0 -> "nlg",
         0.0 -> "pivx",
         0.0 -> "rads",
