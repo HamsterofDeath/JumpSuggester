@@ -686,7 +686,7 @@ object Analyzer extends spells.Spells {
         0.0 -> "doge",
         0.0 -> "dcr",
         0.0 -> "eth",
-        0.0 -> "etc",
+        53.7 -> "etc",
         0.0 -> "lsk",
         0.0 -> "ltc",
         0.0 -> "nav",
@@ -695,7 +695,7 @@ object Analyzer extends spells.Spells {
         653.0 -> "rads",
         0.0 -> "strat",
         0.0 -> "usdt",
-        156.0 -> "waves",
+        0.0 -> "waves",
         0.0 -> "xmr",
         0.0 -> "xrp"
       )
